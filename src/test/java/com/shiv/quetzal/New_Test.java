@@ -20,10 +20,15 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+//Implemented TestListner for this..
+@Listeners(TestListner.class)
 public class New_Test {
 	
 	Configuration config;
@@ -36,13 +41,13 @@ public class New_Test {
 	FileInputStream fis;
 	Boolean flag=true;
 	String Result = null;
+	String currentwindow;
 
 	
 	@BeforeSuite
 	public void setUp()
 	{
 		config = new Configuration();
-		
 		driver = config.getDriver();
 		environment = config.getEnvironment();
 		browser = config.getBrowser();
@@ -72,202 +77,188 @@ public class New_Test {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
 	@Test
-	public void sampleTest()
+	public void sampleTest() throws InterruptedException
 	{
-		driver.get(environment);
-		driver.manage().window().maximize();
-		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-		WebDriverWait wait = new WebDriverWait(driver,20);		
-		int cmd_row=1;
-		String CurrentFrame = null;
-		while(flag==true)
+		try
 		{
-			
-			String command, element , elementtype;
-			WebElement welement = null;
-			By by = null;
-			DataFormatter fmt = new DataFormatter();
-			
-			command = testscript.getRow(cmd_row).getCell(0).toString();
-			elementtype = testscript.getRow(cmd_row).getCell(1).toString();
-			element = testscript.getRow(cmd_row).getCell(2).toString();
-			           
-			//value = testscript.getRow(cmd_row).getCell(3).toString();
-			Cell cell = testscript.getRow(cmd_row).getCell(3);
-			String value = fmt.formatCellValue(cell);
-			
-		
-			if(!elementtype.equals("A"))
+			driver.get(environment);
+			driver.manage().window().maximize();
+			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+			WebDriverWait wait = new WebDriverWait(driver,20);		
+			int cmd_row=1;
+			String CurrentFrame = null;
+			while(flag==true)
 			{
-				switch(elementtype)
+
+				String command, element , elementtype;
+				WebElement welement = null;
+				By by = null;
+				DataFormatter fmt = new DataFormatter();
+
+				command = testscript.getRow(cmd_row).getCell(0).toString();
+				elementtype = testscript.getRow(cmd_row).getCell(1).toString();
+				element = testscript.getRow(cmd_row).getCell(2).toString();
+
+				//value = testscript.getRow(cmd_row).getCell(3).toString();
+				Cell cell = testscript.getRow(cmd_row).getCell(3);
+				String value = fmt.formatCellValue(cell);
+
+
+				if(!elementtype.equals("A"))
 				{
-				case "id" :
-					
-					by = By.id(element);
-					break;
-						
-				case "name":
-					by = By.name(element);
-					break;
-					
-				case "xpath":
-					by = By.xpath(element);
-					break;
-					
-				case "css":
-					by = By.cssSelector(element);
-					break;
-					
-				case "linkText":
-					by = By.linkText(element);
-					break;
-					
-				case "partialLinkText":
-					by = By.partialLinkText(element);
-					break;
-					
-				default:
-					by = null;
-					break;
-								
-					
+					switch(elementtype)
+					{
+					case "id" :
+
+						by = By.id(element);
+						break;
+
+					case "name":
+						by = By.name(element);
+						break;
+
+					case "xpath":
+						by = By.xpath(element);
+						break;
+
+					case "css":
+						by = By.cssSelector(element);
+						break;
+
+					case "linkText":
+						by = By.linkText(element);
+						break;
+
+					case "partialLinkText":
+						by = By.partialLinkText(element);
+						break;
+
+					default:
+						by = null;
+						break;
+
+					}
+
 				}
-		
-			}
-			
-			/*if()
+
+				/*if()
 			{
-				
+
 			}
 			else
 			{*/
 				switch(command)
 				{
 				case "open" :
-					
-				try
-				{
+
 					System.out.println(command+" "+value);
 					driver.navigate().to(value);
-					System.out.println("Executed Successfully.");
-					
-				}catch(Exception e)
-				{
-					System.out.println("Execution Failed.");
-					e.printStackTrace();
-				}
-					
+					System.out.println("Executed Successfully.");					
 					break;
-					
+
 				case "type" :
-					
-					try
+
+					System.out.println(command+" "+value+" into "+element);
+					try 
 					{
-						System.out.println(command+" "+value+" into "+element);
 						welement = driver.findElement(by);
 						welement.clear();
-						welement.sendKeys(value);
-							
-					}
-					catch(Exception e)
-					{
-						System.out.println("Execution Failed.");
-						e.printStackTrace();
-					}
-					
-					
+						
+					} catch (Exception e3) 
+					{						
+						welement = tryJavaScript(element, elementtype);
+						if(welement == null)
+						{
+							declareFailed(command, element);
+							e3.printStackTrace();
+		
+						}
+					}				
+					welement.sendKeys(value);
 					break;
-					
+
 				case "click" :
-					
+
+					System.out.println(command+" on "+element);
 					try
 					{
-						
-						System.out.println(command+" on "+element);
-						welement = driver.findElement(by);
-						
-						Actions actions = new Actions(driver);
-						//actions.moveToElement(welement).click().perform();
-						actions.moveToElement(welement).click(welement).perform();
-//						welement.click(); 
-						System.out.println("Executed Successfully.");
-						
+						welement = driver.findElement(by);	
 						
 					}
 					catch(Exception e)
 					{
-						System.out.println("Executed Failed.");
-						e.printStackTrace();
+						welement = tryJavaScript(element, elementtype);
+						if(welement == null)
+						{
+							declareFailed(command, element);
+							e.printStackTrace();
+
+						}
+						
 					}
+					welement.click();
+					System.out.println("Executed Successfully.");
 					break;
-				
+
 				case "select" :
-											
-					try
-					{
+
+					try {
 						welement = driver.findElement(by);
-						Select dropdown = new Select(welement);
-						System.out.println(command+" "+value+" from "+dropdown.getOptions());
-						dropdown.selectByVisibleText(value);
-						System.out.println("Executed Successfully.");
-						driver.findElement(by).sendKeys(Keys.TAB);
-						Thread.sleep(2000);
-					} 
-					catch (Exception e1)
-					{
-						System.out.println("Execution Failed.");
-						e1.printStackTrace();
+					} catch (Exception e3) {
+						
+						welement = tryJavaScript(element, elementtype);
+						if(welement == null)
+						{
+							declareFailed(command, element);
+							e3.printStackTrace();
+						}
+						
 					}
-					break;
-				
-				case "END" :
 					
+					Select dropdown = new Select(welement);
+					System.out.println(command+" "+value+" from "+dropdown.getOptions());
+					dropdown.selectByVisibleText(value);
+					System.out.println("Executed Successfully.");
+					driver.findElement(by).sendKeys(Keys.TAB);
+					break;
+
+				case "END" :
+
 					System.out.println("Test Complete ..");
 					flag = false;
 					break;
-				
+
 				case "pause" :
-					
-					try 
-					{
-						int time  = Integer.parseInt(value);
-						System.out.println(command+" for "+value);
-						Thread.sleep(time);
-						System.out.println("Executed Successfully");
-					}
-					catch (NumberFormatException | InterruptedException e)
-					{
-						System.out.println("Execution Failed.");
-						e.getMessage();
-					}
-								
+					int time  = Integer.parseInt(value);
+					System.out.println(command+" for "+value);
+					Thread.sleep(time);
+					System.out.println("Executed Successfully");			
 					break;	
-				
+
 				case "clickandwait" :
-					
-					try
-					{
-						System.out.println(command+" on "+element);
+
+					System.out.println(command+" on "+element);
+					try {
 						welement = wait.until(ExpectedConditions.visibilityOf(driver.findElement(by)));
 						welement.click();
-						Thread.sleep(5000);
-						System.out.println("Executed Successfully.");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						welement = tryJavaScript(element, elementtype);
+						if(welement == null)
+						{
+							declareFailed(command, element);
+							e.printStackTrace();
+						}
 						
 					}
-					catch(Exception e)
-					{
-						System.out.println("Execution Failed.");
-						e.printStackTrace();
-					}
+					Thread.sleep(5000);
+					System.out.println("Executed Successfully.");
 					break;
-					
+
 				case "verifytextpresent" :
-					
+
 					System.out.println(command+" text : "+value);
 					flag = verifytextpresent(value);
 					if(flag == true)
@@ -277,49 +268,29 @@ public class New_Test {
 					}
 					else
 					{
-						
 						Result = "FAIL";
 					}
-					try
-					{
-						Assert.assertTrue(flag, "VerifyTextPresent Failed. Text '/"+value+"'/ , does not present.");
-					
-					}
-					catch (Exception e)
-					{
-						System.out.println("Execution Failed.");
-						System.out.println("Text is not on page..!!");
-					}
+					Assert.assertTrue(flag, "VerifyTextPresent Failed. Text '/"+value+"'/ , does not present.");
 					break;
-					
-					
+
+
 				case "verifyelementpresent" : 
-					
-									
-					try
+
+					System.out.println(command+" element : "+element);
+					flag = verifyelementpresent(by);
+					if(flag == true)
 					{
-						System.out.println(command+" element : "+element);
-						flag = verifyelementpresent(by);
-						if(flag == true)
-						{
-							System.out.println("Executed Successfully.");
-							Result = "PASS";
-						}
-						else
-						{
-							System.out.println("Executed Successfully.");
-							Result = "FAIL";
-						}
-						Assert.assertTrue(flag, "WEB ELEMENT Doest NOT Found :"+element);
-						
-					}catch(Exception e)
-					{
-						System.out.println("Execution Failed.");
-						e.printStackTrace();
+						System.out.println("Executed Successfully.");
+						Result = "PASS";
 					}
-					
+					else
+					{
+						System.out.println("Executed Successfully.");
+						Result = "FAIL";
+					}
+					Assert.assertTrue(flag, "Command:"+command+" execution "+Result+" over "+element);
 					break;
-					
+
 				case "accept_certificate" :
 					System.out.println(command);
 					Runtime rc = Runtime.getRuntime();
@@ -332,230 +303,121 @@ public class New_Test {
 					{
 						System.out.println("Execution Failed.");
 						e1.printStackTrace();
+					}	
+					break;
+
+
+				case "SwitchtoFrame" :
+
+					System.out.println(command+" to - "+element);
+					if(element.contains("default"))
+					{
+						driver.switchTo().defaultContent();
+						CurrentFrame = "default";
+
 					}
-					
+					else
+					{
+
+						driver.switchTo().frame(element);
+						CurrentFrame = element;
+					}						
+					System.out.println("Executed Successfully");
 					break;
-//					
-//					case "SelectFrame" :
-//						
-//						//Syntax should be like - 
-//						//SelectFrame A MenuSelect A
-//						// SelectFrame	A Framemain A
-//						
-//						if(element.contains("FrameMain"))
-//						{
-//							driver.switchTo().defaultContent();
-//							driver.switchTo().frame(element);
-//							/**
-//							 * Defines Logic to navigate to PageContainerFrame if FrameMain is selected
-//							 **/
-//							driver.switchTo().frame("PageContainerFrame");	
-//							CurrentFrame = "PageContainerFrame"; 
-//							
-//						}
-//						else if(element.contains("MenuSelect"))
-//						{
-//							driver.switchTo().defaultContent();
-//							driver.switchTo().frame(element);
-//							CurrentFrame = element;
-//							
-//						}
-//						else if(element.contains("relative=up"))
-//						{
-//							((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-//						}
-//						
-//						else if(CurrentFrame.equalsIgnoreCase("PageContainerFrame"))
-//						{
-//							driver.switchTo().frame(element);
-//							CurrentFrame = element;
-//						}
-						
-						
-						
+
+				case "SwitchtoWindow" :
+				case "SwitchtoDefault" : 
 					
-//						//1	MenuSelect	-	Indexes
-//						//2	FrameMain	-	Main Frame for content
-//						//3	PageContainerFrame	-	Pages
-//						//4	default frame
-//						
-//						
-//						/*if(element.contains("PageContainerFrame"))
-//						{
-//							driver.switchTo().frame(element);
-//						}
-//						else if(element.contains("MenuSelect"))
-//						{
-//							driver.switchTo().frame(element);
-//						}
-//						else
-//						{
-//							driver.switchTo().defaultContent();
-//							driver.switchTo().frame(element);
-//						}*/
-//						
-//					try {
-//						if(element.contains("default"))
-//						{
-//							System.out.println(command+" Frame : "+element);
-//							driver.switchTo().defaultContent();
-//							
-//							Thread.sleep(3000);
-//						
-//						}
-//						else
-//						{
-//							/*System.out.println("Switch to element :" + element);
-//							by =  By.id(element);
-//							WebElement el = driver.findElement(by);
-//							
-//							System.out.println("Find by element :" + el.getText() );*/
-//							System.out.println(command+" Frame : "+element);
-//							driver.switchTo().frame(element);
-//							System.out.print("Executed Succssfully.");
-//							Thread.sleep(3000);
-//						}
-//					} catch (Exception e2) {
-//						System.out.println("Executed Failed.");
-//						
-//						e2.printStackTrace();
-//					}
-//						break;
-						
-					case "SwitchtoFrame" :
-						
+					if(command.equalsIgnoreCase("SwitchtoWindow"))
+					{
 						System.out.println(command+" to - "+element);
-						
-						try
-						{
-							if(element.contains("default"))
+						currentwindow = driver.getWindowHandle();
+						Set<String> openwindows = driver.getWindowHandles();
+						try {
+							for(String testwin : openwindows)
 							{
-								driver.switchTo().defaultContent();
-								CurrentFrame = "default";
-								
-							}
-							else
-							{
-							
-								driver.switchTo().frame(element);
-								CurrentFrame = element;
-							}
-						
-							System.out.println("Executed Successfully");
-							
-						}catch(Exception e)
-						{
-							System.out.println("Execution Failed.");
-							e.printStackTrace();
-						}
-							
-							
-						break;
-						
-					case "SwitchtoWindow" :
-						
-						System.out.println(command+" to - "+element);
-							String currentwindow = driver.getWindowHandle();
-							Set<String> openwindows = driver.getWindowHandles();
-							try
-							{
-								for(String testwin : openwindows)
+								driver.switchTo().window(testwin);
+								if(driver.getTitle().equalsIgnoreCase(element))
 								{
-									driver.switchTo().window(testwin);
-									if(driver.getTitle().equalsIgnoreCase(element))
-									{
-										System.out.println("Executed Successfully");
-										
-										
-										break;
-									}
-								}
-							}
-							catch(Exception e)
-							{
-								System.out.println("Execution Failed");
-								e.printStackTrace();
-							}
-							
-						
-						
-						break;
-						
-					case "Scrolldown" :
-						
-						((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-						
-						break;
-								
-					case "Selectfromsuggestion" :
-						
-						try
-						{
-							System.out.println(command+" value - "+value);
-							//welement = wait.until(ExpectedConditions.visibilityOf(driver.findElement(by)));
-							welement = driver.findElement(by);
-							welement.sendKeys(value);
-							Thread.sleep(2000);
-							
-							for(int i=0; i<=3; i++)
-							{
-								welement.sendKeys(Keys.ARROW_DOWN);
-								Thread.sleep(1000);
-							}
-							
-							welement.sendKeys(Keys.ENTER);
-							System.out.println("Executed Successfully");
-							Thread.sleep(3000);
-							
-						}
-						catch(Exception e)
-						{
-							System.out.println("Execution Failed");
-							e.getMessage();
-						}
-						
-					break;
-					
-					case "rate" :
-					case "submit" :
-						
-						System.out.println(command+" Target element - "+element);
-				
-						for(int i=0;i<Integer.parseInt(value);i++)
-						{
-							try
-							{
-								Thread.sleep(1100);
-								welement = driver.findElement(by);
-								if(welement != null)
-								{	
-									System.out.println("Executed Successfully");
+									System.out.println("Executed Successfully");	
 									break;
 								}
 							}
-							catch(Exception e)
-							{
-								
-							}
-						}
-						if(welement == null)
-						{
-							System.out.println("Execution Failed");
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							System.out.println("Executed Failed");
+							e.printStackTrace();
 						}
 						
+					}
+					
+					if(command.equalsIgnoreCase("SwitchtoDefault"))
+					{
+						try {
+							driver.switchTo().window(currentwindow);
+							System.out.println("Executed Successfully");
+							
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							System.out.println("Executed Failed");
+							e.printStackTrace();
+						}
+					}
 					break;
-					
 
-				
-					
+				case "Scrolldown" :	
+					((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
+					break;
+
+				case "Selectfromsuggestion" :
+
+					System.out.println(command+" value - "+value);
+					//welement = wait.until(ExpectedConditions.visibilityOf(driver.findElement(by)));
+					welement = driver.findElement(by);
+					welement.sendKeys(value);
+					Thread.sleep(2000);
+
+					for(int i=0; i<=3; i++)
+					{
+						welement.sendKeys(Keys.ARROW_DOWN);
+						Thread.sleep(1000);
+					}
+
+					welement.sendKeys(Keys.ENTER);
+					System.out.println("Executed Successfully");
+					Thread.sleep(3000);	
+					break;
+
+				case "rate" :
+				case "submit" :
+
+					System.out.println(command+" Target element - "+element);
+
+					for(int i=0;i<Integer.parseInt(value);i++)
+					{
+						Thread.sleep(1100);
+						welement = driver.findElement(by);
+						if(welement != null)
+						{	
+							System.out.println("Executed Successfully");
+							break;
+						}
+					}
+					if(welement == null)
+					{
+						System.out.println("Execution Failed");
+					}
+					break;
+
+				}
+				cmd_row = cmd_row+1;
+
 			}
-						
-			
-			
-			
-			
-			cmd_row = cmd_row+1;
-			
+		}
+		
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}		
 				
@@ -566,15 +428,14 @@ public class New_Test {
 	public void tearDownTest()
 	{
 		Boolean Scrprint = false;
-		Scrprint = config.takeScreenShot(Result);
-		if(Scrprint){
-			System.out.println("Screen Shot Taken !!");
-		}
-		else
-		{
-			System.out.println("Unable to take screen shot !!");
-		}
-		
+//		if(Scrprint){
+//			System.out.println("Screen Shot Taken !!");
+//		}
+//		else
+//		{
+//			System.out.println("Unable to take screen shot !!");
+//		}
+//		
 		System.out.println("Test Executed..");
 		driver.quit();
 		
@@ -593,7 +454,7 @@ public class New_Test {
 		WebElement element = null;
 		try
 		{
-		element = driver.findElement(by);
+			element = driver.findElement(by);
 		}
 		catch (Exception e)
 		{
@@ -615,5 +476,38 @@ public class New_Test {
 		return false;
 	}
 	
+	
+	public WebElement tryJavaScript(String element, String elementtype)
+	{
+		WebElement welement = null;
+		
+		if(elementtype.equalsIgnoreCase("id"))
+		{
+			welement = (WebElement) ((JavascriptExecutor) driver).executeScript("document.getElementById('"+element+"')");
+			
+		}
+		else if(elementtype.equalsIgnoreCase("xpath"))
+		{
+			welement = (WebElement) ((JavascriptExecutor) driver).executeScript("$x('"+element+"')");
+			
+		}
+				
+		if(welement == null)
+		{
+			System.out.println("Web Element is null.");
+		}
+		return welement;
+	}
+	
+	
+	public void declareFailed(String command, String element)
+	{
+		Assert.assertTrue(false, "Command -> "+command+" : Over "+element+" Failed..");
+	}
+	
+	public void declarePassed(String command, String element)
+	{
+		Assert.assertTrue(true, "Command -> "+command+" : Over "+element+" Passed..");
+	}
 	
 }

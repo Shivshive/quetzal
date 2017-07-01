@@ -42,30 +42,9 @@ public class Configuration {
 			environement = mastersheet.getRow(1).getCell(3).toString();
 			browser = mastersheet.getRow(1).getCell(2).toString();
 			//Takes browser as parameter and assign appropriate driver..
-			switch(browser)
-			{
-				case "googlechrome" : 
-					System.setProperty("webdriver.chrome.driver", "./Drivers/chromedriver.exe");
-					driver = new ChromeDriver();
-					break;
-				
-				case "firefox" :
-					//GECKO Driver provides support for Firefox version greater than- v45..
-					System.setProperty("webdriver.gecko.driver","./Drivers/geckodriver.exe");
-					driver = new FirefoxDriver();
-					break;
 			
-				case "iexplorer" : 
-					System.setProperty("webdriver.IE.driver", "./Drivers/IEDriverServer.exe");
-					driver = new InternetExplorerDriver();
-					break;
-					
-				default : 
-					System.out.println("Driver not mentioned..");
-					break;
-				
-			}
-			
+			setupWebDriver(browser);
+						
 			for(int i=0;i<=mastersheet.getLastRowNum();i++)
 			{
 				if(mastersheet.getRow(i).getCell(1).toString().equalsIgnoreCase("Y"))
@@ -132,30 +111,32 @@ public class Configuration {
 			return workbook;
 		}
 		
-		public boolean takeScreenShot(String Result)
+		
+		public void setupWebDriver(String browser)
 		{
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd hhmmss");
-			Date dt = new Date();
-			String formattedDate = formatter.format(dt);
-			
-			try 
+			switch(browser)
 			{
-				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+				case "googlechrome" : 
+					System.setProperty("webdriver.chrome.driver", "./Drivers/chromedriver.exe");
+					driver = new ChromeDriver();
+					break;
 				
-			 // now copy the  screenshot to desired location using copyFile //method
-			  
-			String FileName = testcasename+"_"+Result+"_"+formattedDate;	
-			FileUtils.copyFile(src, new File("./TestScreenShots/"+FileName+".jpg"));
-			return true;
-			}
-			catch (IOException e)
-			{
-				System.out.println(e.getMessage());
-				return false;
-			  		 
-			}
+				case "firefox" :
+					//GECKO Driver provides support for Firefox version greater than- v45..
+					System.setProperty("webdriver.gecko.driver","./Drivers/geckodriver.exe");
+					driver = new FirefoxDriver();
+					break;
 			
-			
+				case "iexplorer" : 
+					System.setProperty("webdriver.IE.driver", "./Drivers/IEDriverServer.exe");
+					driver = new InternetExplorerDriver();
+					break;
+					
+				default : 
+					System.out.println("Driver not mentioned..");
+					break;
+				
+			}
 		}
 
 }
