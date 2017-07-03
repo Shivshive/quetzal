@@ -36,6 +36,7 @@ public class New_Test {
 	FileInputStream fis;
 	Boolean flag=true;
 	String Result = null;
+	String currentwindow;
 
 	
 	@BeforeSuite
@@ -453,9 +454,13 @@ public class New_Test {
 						break;
 						
 					case "SwitchtoWindow" :
+					case "SwitchtoDefault" :
 						
-						System.out.println(command+" to - "+element);
-							String currentwindow = driver.getWindowHandle();
+						
+						if(command.equalsIgnoreCase("SwitchtoWindow"))
+						{
+							System.out.println(command+" to - "+element);
+							currentwindow = driver.getWindowHandle();
 							Set<String> openwindows = driver.getWindowHandles();
 							try
 							{
@@ -478,6 +483,12 @@ public class New_Test {
 							}
 							
 						
+						}
+						else if(command.equalsIgnoreCase("SwitchtoDefault")) 
+						{
+							driver.switchTo().window(currentwindow);
+							
+						}
 						
 						break;
 						
