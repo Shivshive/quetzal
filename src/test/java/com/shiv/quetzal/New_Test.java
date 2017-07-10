@@ -560,11 +560,7 @@ public class New_Test {
 				
 					
 			}
-						
-			
-			
-			
-			
+		
 			cmd_row = cmd_row+1;
 			
 		}
