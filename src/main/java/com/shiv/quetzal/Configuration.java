@@ -32,7 +32,7 @@ public class Configuration {
 		//Configuration Class sets all properties required to execute test..
 		//Also contains required methods to pass required instances..
 		
-		wpath = new File("./MasterSheet.xlsx");
+		wpath = new File("C:\\Sel_Frmwork\\MasterSheet.xlsx");
 		try 
 		{
 			fis = new FileInputStream(wpath);
@@ -132,30 +132,6 @@ public class Configuration {
 			return workbook;
 		}
 		
-		public boolean takeScreenShot(String Result)
-		{
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd hhmmss");
-			Date dt = new Date();
-			String formattedDate = formatter.format(dt);
-			
-			try 
-			{
-				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-				
-			 // now copy the  screenshot to desired location using copyFile //method
-			  
-			String FileName = testcasename+"_"+Result+"_"+formattedDate;	
-			FileUtils.copyFile(src, new File("./TestScreenShots/"+FileName+".jpg"));
-			return true;
-			}
-			catch (IOException e)
-			{
-				System.out.println(e.getMessage());
-				return false;
-			  		 
-			}
-			
-			
-		}
+		
 
 }
